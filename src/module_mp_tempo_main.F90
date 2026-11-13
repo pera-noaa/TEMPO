@@ -1609,6 +1609,9 @@ module module_mp_tempo_main
         endif
       endif
 
+      ! below freezing, snow cannot gain more from rain-snow collection than the rain loses to it
+      if (temp(k) < t0 .and. tend%prs_rcs(k) > -tend%prr_rcs(k)) tend%prs_rcs(k) = -tend%prr_rcs(k)
+
       ! losses to snow include sublimation; melting; collection by rain; 
       ! rime splintering
       sump = tend%prs_sde(k) - tend%prs_ihm(k) - tend%prr_sml(k) + &
@@ -1659,6 +1662,14 @@ module module_mp_tempo_main
       tend%prr_rcg(k) = ratio * sign(1.0_dp, tend%prr_rcg(k))
       tend%prg_rcg(k) = -tend%prr_rcg(k)
       tend%pbg_rcg(k) = meters3_to_liters*tend%prg_rcg(k)/rho_g(nrhg) ! scale density change
+
+      ! graupel gains must match the (possibly limited) losses that feed them
+      tend%prg_rci(k) = tend%pri_rci(k) + tend%prr_rci(k)
+      tend%pbg_rci(k) = meters3_to_liters*tend%prg_rci(k)/rho_g(nrhg)
+      if (temp(k) < t0) then
+        tend%prg_rcs(k) = -(tend%prr_rcs(k) + tend%prs_rcs(k))
+        tend%pbg_rcs(k) = meters3_to_liters*tend%prg_rcs(k)/rho_g(nrhg)
+      endif
 
       ! reset total rain-snow collection amount if reduced
       if (temp(k) >= t0) then
