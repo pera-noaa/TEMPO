@@ -1908,7 +1908,8 @@ module module_mp_tempo_main
       else
         qpi(k)=qa(k)+0.5_wp*(dip+dim)*dza(k)
         qmi(k)=2._wp*qa(k)-qpi(k)
-        if(qpi(k) > 0._wp .or. qmi(k) < 0._wp) then
+        ! fall back to piecewise constant if either edge value is negative
+        if(qpi(k) < 0._wp .or. qmi(k) < 0._wp) then
           qpi(k) = qa(k)
           qmi(k) = qa(k)
         endif
